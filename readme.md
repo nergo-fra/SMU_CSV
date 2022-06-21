@@ -149,6 +149,7 @@ inst.write(":sens1:wait off")
 inst.write(":sour1:wait off")
 ```
 * Measurement wait set to off.
+
 ![img.png](img.png)
 *Illustration of wait function from Keysight Technologies B2900 Series
 Source/Measure Unit command reference*
