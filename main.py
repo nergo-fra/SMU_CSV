@@ -36,7 +36,7 @@ time_before meas = 2 #if SMU is not on, we give it time to initialize
 # FUNCTION
 
 def _read_csv(name):
-    df = pd.read_csv(name, names=[str(x) for x in range(nb_channel + 1)], index_col=0, skiprows=1, low_memory=False)
+    df = pd.read_csv(name, names=["Volt"], index_col=0, skiprows=1, low_memory=False)
     df.astype('float').dtypes
     return df
 
@@ -127,6 +127,12 @@ def _settings_commands_SMU(inst, parameters, V_list, wait = True):
     print("Done\n")
     return data_detect_np_0, data_detect_np_1, data_led_np_0, data_led_np_1, data_led_np_2
 
+def _generate_sweep_from_pd(df):
+    sweep = ""
+    for i in range(0, len(df["Volt"])):
+        sweep += "{:.6E}".format(df["Volt"][i], 6) + ","
+    sweep += "{:.5E}".format(df["Volt"][len(df["Volt"])], 5))
+    return sweep
 
 # MAIN
 
@@ -142,4 +148,32 @@ if __name__ == '__main__':
     assert (inst.query("*IDN?") == "Keysight Technologies,B2902A,MY51143745,3.4.2011.5100\n"), \
         print("Houston, we have a problem")
     inst.timeout = 500 * 1e5  # to change, depends on longest measurement. Not in the readme but pretty obvious
-    V_list = _generate_sweep_from_csv()
+    df = _read_csv("spinal_normalize.csv")
+    V_list = _generate_sweep_from_pd(df)
+
+    # parameters format (list of strings, units of seconds, amps, volts):
+    # [(0) S1 compliance current,(1) time per point,(2) points per sweep,(3) acquisition time,
+    #  (4) premeasurement voltage hold time]
+    parameters = []
+    parameters.append("{:.0E}".format(I_comp))
+    parameters.append("{:.0f}".format(len(V_list.split(','))))
+    parameters.append("{:.1E}".format(time_per_point / 2))
+    parameters.append("{:.1E}".format((time_per_point / 2)))
+    parameters.append(time_before_meas)
+
+    # Create empty array to store output data
+    transfer = np.empty((len(I_list.split(",")), 8), float)
+    transfer = _settings_commands_SMU(inst, parameters, V_list, False)
+
+    # Plotting
+    plt.plot(transfer[0], transfer[1], color='aquamarine', label = "Detector output")
+    plt.plot(transfer[2], transfer[4], color='salmon', label = "LED input")
+    plt.xlabel("$Time$ (s)")
+    plt.ylabel("$Voltage$ (V)")
+    plt.title("Spinal chord recording - with Blood")
+    plt.show()
+
+    # Saving CSV
+    filename = "Spinal chord recording - with blood " + str(1) #change filename
+    folder = "Data\\"
+    np.save(folder + filename, transfer)
