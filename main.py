@@ -31,7 +31,7 @@ plt.style.use('dark_background')
 
 I_comp = 0.0007 # current compliance S1
 time_per_point = 1e-1  # Minimum value of 2e-5
-time_before meas = 2 #if SMU is not on, we give it time to initialize
+time_before_meas = 2 #if SMU is not on, we give it time to initialize
 
 # FUNCTION
 
@@ -66,7 +66,7 @@ def _settings_commands_SMU(inst, parameters, V_list, wait = True):
     print("SMU settings in progress : 30% \n")
     # Sets the measurement list of voltages (channel 1)
     inst.write(":sour1:volt:mode list")
-    inst.write(":sour1:list:volt " + ch1_list)
+    inst.write(":sour1:list:volt " + V_list)
 
     print("SMU settings in progress : 40% \n")
     # Sense settings
@@ -117,7 +117,7 @@ def _settings_commands_SMU(inst, parameters, V_list, wait = True):
     data_detect_0 = inst.query(":fetc:arr:time? (@2)")
     data_detect_1 = inst.query(":fetc:arr:volt? (@2)")
 
-    print("Data export... \n"))
+    print("Data export... \n")
     # Transforming data from list to array
     data_led_np_0 = np.asarray([float(i) for i in data_LED_0.split(',')])
     data_led_np_1 = np.asarray([float(i) for i in data_LED_1.split(',')])
@@ -131,7 +131,7 @@ def _generate_sweep_from_pd(df):
     sweep = ""
     for i in range(0, len(df["Volt"])):
         sweep += "{:.6E}".format(df["Volt"][i], 6) + ","
-    sweep += "{:.5E}".format(df["Volt"][len(df["Volt"])], 5))
+    sweep += "{:.5E}".format(df["Volt"][len(df["Volt"])], 5)
     return sweep
 
 # MAIN
@@ -162,7 +162,7 @@ if __name__ == '__main__':
     parameters.append(time_before_meas)
 
     # Create empty array to store output data
-    transfer = np.empty((len(I_list.split(",")), 8), float)
+    transfer = np.empty((len(V_list.split(",")), 8), float)
     transfer = _settings_commands_SMU(inst, parameters, V_list, False)
 
     # Plotting
