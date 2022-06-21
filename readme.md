@@ -69,4 +69,13 @@ inst.write(":sens2:func:on \"volt\"")
 inst.query(":sens1:func?")
 ```
 <br></br>
+```python
 inst.write(":sens2:curr:rang:auto on")
+```
+* Enables or disables the automatic ranging function of the specified measurement
+channel.
+<br></br>
+```python
+inst.write(":sour1:volt:rang 2")
+```
+* If the automatic ranging function is disabled, this command sets it to 2V : 0 ≤ |V| ≤ 2.12 V.
