@@ -220,7 +220,7 @@ inst.write(":form:elem:sens curr,time")
 
 :exclamation: Order of returned data (depending on which you included): voltage, current,
 resistance, time, status, source.
-
+<br><br/>
 ```python
 inst.write(":form:elem:calc calc,time")
 ```
@@ -272,7 +272,6 @@ data_out = inst.query(":fetc:scal:curr? (@1,2)")
 ```
 * This exemple is for current, you may replace curr by volt, res... depending on what you need.
 
-<br><br/>
 :exclamation: If nothing is specified after ":fetc", it will fetch a scalar by default i.e.
 ```python
 data_out = inst.query(":fetc:scal? (@1,2)")
