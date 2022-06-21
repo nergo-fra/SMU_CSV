@@ -1,16 +1,33 @@
-# This is a sample Python script.
+# Author : Nergo || Special thanks to Scott T Keene, Cambridge University
 
-# Press Maj+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# IMPORT
+
+import pyvisa
+import matplotlib as mpl
+import time
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import animation, rc, cm
+import matplotlib.colors as colors
+from scipy import ndimage
+from scipy import signal
+import scipy.signal
+import scipy.misc
+from scipy.interpolate import griddata
+from scipy.optimize import fmin_powell
+import scipy.ndimage as snd
+from scipy.fft import fft, ifft, fftfreq
+from tkinter import filedialog
+import tkinter
+import pickle
+import pandas as pd
+
+# FUNCTION
+
+def _read_csv():
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# MAIN
 
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
