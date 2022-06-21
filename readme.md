@@ -47,5 +47,26 @@ inst.write(":outp2 on")
 ```python
 inst.write(":sour1:list:curr " + ch1_list)
 ```
+* Sets the list sweep output (current or voltage) data for the specified channel.
 
-:warning: The sweep list has a specific format :
+:exclamation: The sweep list has a specific format :
+* float with same format (Example : format everything to 3e -> scientific notation, 3 digits after the coma )
+* Each value separated by coma : yes it's a list
+
+<br></br>
+
+```python
+inst.write(":sens1:func:on \"curr\"")
+```
+or
+```python
+inst.write(":sens2:func:on \"volt\"")
+```
+* Enables the specified measurement functions.
+
+:question: To check if it worked, use 
+```python
+inst.query(":sens1:func?")
+```
+<br></br>
+inst.write(":sens2:curr:rang:auto on")
