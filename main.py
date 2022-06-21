@@ -30,7 +30,7 @@ plt.style.use('dark_background')
 # PARAMETERS TO MODIFY
 
 I_comp = 0.0007 # current compliance S1
-time_per_point = 1e-1  # Minimum value of 2e-5
+time_per_point = 3.3333e-05  # Minimum value of 2e-5 #use time between measures from csv
 time_before_meas = 2 #if SMU is not on, we give it time to initialize
 
 # FUNCTION
