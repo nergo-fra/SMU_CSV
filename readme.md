@@ -126,7 +126,7 @@ channel.
 ```python
 inst.write(":sens1:curr:prot 0.4")
 ```
-*Sets the compliance value of the specified channel. The setting value is applied to both positive and negative sides.
+* Sets the compliance value of the specified channel. The setting value is applied to both positive and negative sides.
 
 ***N.B. 1*** This is used on both sens and source
 
