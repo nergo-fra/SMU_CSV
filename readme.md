@@ -74,8 +74,37 @@ inst.write(":sens2:curr:rang:auto on")
 ```
 * Enables or disables the automatic ranging function of the specified measurement
 channel.
+
+***N.B.*** This is used on both sens and source
 <br></br>
 ```python
-inst.write(":sour1:volt:rang 2")
+inst.write(":sens1:curr:prot 0.4")
+```
+*Sets the compliance value of the specified channel. The setting value is applied to both positive and negative sides.
+
+***N.B. 1*** This is used on both sens and source
+
+***N.B. 2*** You can specify a different maximum and minimum using :
+```python
+inst.write(":sens1:curr:prot:neg 0.4")
+inst.write(":sens1:curr:prot:pos 0.6")
+```
+:exclamation: I would advise you to set this after the immediate value of your output and before turning the output on. You can never be too sure.
+<br><br/>
+```python
+inst.write(":sens1:volt:rang 2")
 ```
 * If the automatic ranging function is disabled, this command sets it to 2V : 0 ≤ |V| ≤ 2.12 V.
+
+***N.B.*** This is used on both sens and source
+<br><br/>
+```python
+inst.write(":sens1:wait off")
+inst.write(":sour1:wait off")
+```
+* Measurement wait set to off.
+![img.png](img.png)
+*Illustration of wait function from Keysight Technologies B2900 Series
+Source/Measure Unit command reference*
+
+
