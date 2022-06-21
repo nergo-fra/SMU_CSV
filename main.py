@@ -41,6 +41,9 @@ def _read_csv(name):
     return df
 
 def _settings_commands_SMU(inst, parameters, V_list, wait = True):
+    # parameters format (list of strings, units of seconds, amps, volts):
+    # [(0) S1 compliance current,(1) time per point,(2) points per sweep,(3) acquisition time,
+    #  (4) premeasurement voltage hold time]
     # Source settings before turn on - the second source is set as shown by carefulness, we wouldn't want to inject a current or voltage in the detector
     inst.write(":sour1:func:mode volt")
     inst.write(":sour1:volt:lev:imm" + V_list.split(',')[0])
@@ -55,7 +58,7 @@ def _settings_commands_SMU(inst, parameters, V_list, wait = True):
 
     # If wait is needed (if the SMU is not on yet)
     if wait:
-        time.sleep(parameters[7])
+        time.sleep(parameters[4])
 
     # Sets the measurement list of voltages (channel 1)
     inst.write(":sour1:volt:mode list")
