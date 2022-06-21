@@ -2,9 +2,50 @@
 # SMU_CSV Project
 
 ##### *All rights reserved Opto Biosystems*
+###### *Special Thanks to Scott T Keene, Cambridge University*
 <br/>
 
 
 This project is designed to control a SMU using data points from a csv.
 
-The following lines explains SMU communication syntax.
+The following lines explains SMU communication syntax:
+
+### Basic commands
+```python
+serial = 'USB0::0x0957::0xCE18::MY51143745::INSTR'
+inst = rm.open_resource(serial)
+```
+ * defining and connecting to the *inst*rument to use by using a serial. 
+ * RM -> Resource Manager, requires pyusb.
+<br></br>
+```python
+inst.write(":sour1:func:mode volt")
+```
+or
+```python
+inst.write(":sour1:func:mode curr")
+```
+* Changes the mode of source output to volt or current.
+<br></br>
+```python
+ inst.write(":sour1:curr:lev:imm 0") 
+```
+* Changes the output value (here in current mode) to 0. You put the value you are interested in after the imm.
+* The mode must have been set ***prior*** to this command. Otherwise, it'll do nothing if the mode of the SMU isn't corresponding to the one mentioned in this command.
+<br></br>
+```python
+inst.write(":outp1 on")
+```
+or
+```python
+inst.write(":outp2 on")
+```
+* This command switches the desired output on (1 or 2).
+* It is advised to switch the level (previous command) before switching the output on. You wouldn't want to fry your device.
+<br></br>
+*let ch1_list, a sweep list of current value you want your output to give*
+```python
+inst.write(":sour1:list:curr " + ch1_list)
+```
+
+:warning: The sweep list has a specific format :
