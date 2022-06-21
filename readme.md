@@ -5,12 +5,26 @@
 ###### *Special Thanks to Scott T Keene, Cambridge University*
 <br/>
 
+# Table of contents
+1. [Introduction](#introduction)
+2. [Basic syntax](#basicsynt)
+3. [Basic commands](#basiccom)
+   1. [Query / Statement](#query)
+   2. [Connection](#con)
+   3. [Source and sense control](#sourcesenc)
+   4. [Trigger control](#trig)
+   5. [Formatting Output Data](#format)
+   6. [Running measurement](#run)
+   7. [Fetching the result data](#fetch)
+   8. [Run the measurement and fetching data at once](#read)
+   9. [Advanced Function](#adv)
 
+### Introduction <a name="introduction"></a>
 This project is designed to control a SMU using data points from a csv.
 
 The following lines explains SMU communication syntax (non-exhaustive):
 
-### Basic syntax
+### Basic syntax <a name="basicsynt"></a>
 
 ```python
 inst.function
@@ -21,9 +35,9 @@ Here's a short non-exhaustive of the attribute function you can use through the 
 * query : you ask something from your instrument and therefore expect an answer
 
 These two attribute functions are all that you need 99% of the time.  
-### Basic commands
+### Basic commands <a name="basiccom"></a>
 
-#### Query / Statement
+#### Query / Statement <a name="query"></a>
 
 One may differentiate a query from a statement depending on the presence of a question mark.
 
@@ -36,7 +50,7 @@ and
 inst.query(":sour1:func:mode?")
 ```
 The first one is a statement, the second is a query.
-#### Connection
+#### Connection <a name="con"></a>
 ```python
 serial = 'USB0::0x0957::0xCE18::MY51143745::INSTR'
 inst = rm.open_resource(serial)
@@ -44,7 +58,7 @@ inst = rm.open_resource(serial)
  * defining and connecting to the *inst*rument to use by using a serial. 
  * RM -> Resource Manager, requires pyusb.
 <br></br>
-#### Source and sense control
+#### Source and sense control <a name="sourcesens"></a>
 ***N.B. These commands can be used for sour1 or sour2 just the same, when one is mentioned***
 
 ***N.B. These commands can be used for sens1 or sens2 just the same, when one is mentioned***
@@ -146,7 +160,7 @@ inst.write(":sens1:curr:aper " + parameters[3])
 
 :exclamation: +8E-6 to +2 seconds 
 <br><br/>
-#### Trigger control
+#### Trigger control <a name="trig"></a>
 
 ***N.B. These commands can be used for trig1 or trig2 just the same***
 
@@ -194,7 +208,7 @@ Source/Measure Unit command reference*
 :bulb: If there is a specific starting condition to start the trigger function, you have to use ARM commands (allows one to use LXI Trigger Events). If I am not mistaken, the ARM condition roughly tells the trigger timer when to start. It is required for more high-level control and specific use. LXI triggering uses UDP Port/TCP Socket Listener
 and the LAN Event Sender.
 
-### Formatting Output Data
+### Formatting Output Data <a name="format"></a>
 
 ```python
 inst.write(":form:elem:sens curr,time")
@@ -214,7 +228,7 @@ inst.write(":form:elem:calc calc,time")
 
 ***N.B.*** I didn't mention calculation before, it is basically a way to manipulate the output data using math function. Please refer to the command reference or feel free to complete this document if need be.
 
-### Running the measurement
+### Running the measurement <a name="run"></a>
 
 ```python
 inst.write(":init (@1,2)")
@@ -224,7 +238,7 @@ inst.write(":init (@1,2)")
 
 :exclamation: This command must be placed after every command mentioned above. It is obvious that you need to set measurement parameters before launching the said measurement.
 
-### Fetching the result data
+### Fetching the result data <a name="fetch"></a>
 
 After running your measurement, you have to fetch the resulting data in order to store them in a variable.
 
@@ -267,7 +281,7 @@ data_out = inst.query(":fetc? (@1,2)")
 ```
 
 
-### Run the measurement and fetching data at once
+### Run the measurement and fetching data at once <a name="read"></a>
 
 To run the measurement and fetch data with one command, you may use the read function :
 ```python
@@ -289,7 +303,7 @@ By now, you must have understood how it worked.
 
 :exclamation: Similarly to previous mention, if ":scal" or ":arr" is not mentioned, it fetches a scalar by default.
 
-### Advanced function
+### Advanced function <a name="adv"></a>
 
 You may use advanced function to control the instrument. For instance, you may generate a beep sound of 800Hz frequency during 1.5 seconds (```inst.write(":sys:beep 800, 1.5")```).
 
