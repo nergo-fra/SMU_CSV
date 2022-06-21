@@ -147,7 +147,7 @@ if __name__ == '__main__':
     assert (inst.query("*IDN?") == "Keysight Technologies,B2902A,MY51143745,3.4.2011.5100\n"), \
         print("Houston, we have a problem")
     inst.timeout = 500 * 1e5  # to change, depends on longest measurement. Not in the readme but pretty obvious
-    df = _read_csv("spinal_normalize.csv")
+    df = _read_csv("spinal_normalized1.csv")
     V_list = _generate_sweep_from_pd(df)
 
     # parameters format (list of strings, units of seconds, amps, volts):
