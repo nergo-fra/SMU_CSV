@@ -201,6 +201,7 @@ inst.write(":trig1:acq:del " + parameters[2])
 <br><br/>
 
 <img src="img_2.png" alt="drawing" width="200"/> <img src="img_1.png" alt="drawing" width="206"/>
+
 <img src="img_3.png" alt="drawing" width="410"/>
 
 *Illustrations of trigger function from Keysight Technologies B2900 Series
