@@ -160,7 +160,7 @@ inst.write(":sens1:curr:aper " + parameters[3])
 ```
 * Sets the integration time for one point measurement (i.e. It's the acquisition time for one point).
 
-:exclamation: +8E-6 to +2 seconds 
+:exclamation: Integration time range : +8E-6 to +2 seconds 
 <br><br/>
 #### Trigger control <a name="trig"></a>
 
