@@ -8,9 +8,35 @@
 
 This project is designed to control a SMU using data points from a csv.
 
-The following lines explains SMU communication syntax:
+The following lines explains SMU communication syntax (non-exhaustive):
 
+### Basic syntax
+
+```python
+inst.function
+```
+You are using an *attribute* function of the instrument (inst) you are communicating with.
+Here's a short non-exhaustive of the attribute function you can use through the serial:
+* write : you are writing to your instrument
+* query : you ask something from your instrument and therefore expect an answer
+
+These two attribute functions are all that you need 99% of the time.  
 ### Basic commands
+
+#### Query / Statement
+
+One may differentiate a query from a statement depending on the presence of a question mark.
+
+Example :
+```python
+inst.write(":sour1:func:mode curr")
+```
+and
+```python
+inst.query(":sour1:func:mode?")
+```
+The first one is a statement, the second is a query.
+#### Connection
 ```python
 serial = 'USB0::0x0957::0xCE18::MY51143745::INSTR'
 inst = rm.open_resource(serial)
@@ -18,6 +44,11 @@ inst = rm.open_resource(serial)
  * defining and connecting to the *inst*rument to use by using a serial. 
  * RM -> Resource Manager, requires pyusb.
 <br></br>
+#### Source and sense control
+***N.B. These commands can be used for sour1 or sour2 just the same, when one is mentioned***
+
+***N.B. These commands can be used for sens1 or sens2 just the same, when one is mentioned***
+
 ```python
 inst.write(":sour1:func:mode volt")
 ```
@@ -41,6 +72,7 @@ or
 inst.write(":outp2 on")
 ```
 * This command switches the desired output on (1 or 2).
+* If you desire to turn the output off, replace on by off in this command.
 * It is advised to switch the level (previous command) before switching the output on. You wouldn't want to fry your device.
 <br></br>
 *let ch1_list, a sweep list of current value you want your output to give*
@@ -106,5 +138,159 @@ inst.write(":sour1:wait off")
 ![img.png](img.png)
 *Illustration of wait function from Keysight Technologies B2900 Series
 Source/Measure Unit command reference*
+<br><br/>
+```python
+inst.write(":sens1:curr:aper " + parameters[3])
+```
+* Sets the integration time for one point measurement (i.e. It's the acquisition time for one point).
+
+:exclamation: +8E-6 to +2 seconds 
+<br><br/>
+#### Trigger control
+
+***N.B. These commands can be used for trig1 or trig2 just the same***
+
+```python
+inst.write(":trig1:sour tim")
+```
+or
+```python
+inst.write(":trig2:sour tim")
+```
+* Selects the trigger source (here timer but you can choose another one, please refer to the command reference if need be) for the specified device action (here it's implied it's for all actions on trig1).
+* You can assign a specific source for a specific action using a command such as the following for the acquisition:
+```python
+inst.write(":trig2:acq:sour tim")
+```
+<br><br/>
+```python
+inst.write("trig1:tim 1e-1")
+```
+* Sets the timer at a value being the time per point in seconds.
+
+:exclamation: Trigger TIM minimum value of 2E-5
+<br><br/>
+
+```python
+inst.write("trig1:acq:coun 100")
+```
+* Sets the trigger count for the specified device action. For instance here, I will acquire a 100 measurement points.
+<br><br/>
+```python
+inst.write(":trig1:acq:del " + parameters[2])
+```
+* Sets the trigger delay for the specified device action.
+
+:exclamation: Range delay supported : 0 to 100000 seconds.
+<br><br/>
+
+<img src="img_2.png" alt="drawing" width="200"/>
+<img src="img_1.png" alt="drawing" width="206"/>
+<img src="img_3.png" alt="drawing" width="410"/>
+
+*Illustrations of trigger function from Keysight Technologies B2900 Series
+Source/Measure Unit command reference*
+
+:bulb: If there is a specific starting condition to start the trigger function, you have to use ARM commands (allows one to use LXI Trigger Events). If I am not mistaken, the ARM condition roughly tells the trigger timer when to start. It is required for more high-level control and specific use. LXI triggering uses UDP Port/TCP Socket Listener
+and the LAN Event Sender.
+
+### Formatting Output Data
+
+```python
+inst.write(":form:elem:sens curr,time")
+```
+* Specifies the elements included in the sense or measurement result data.
+* Make a list of what you want to include, the exemple here provides current and time. One may add : volt, res[istance], stat[us], sour[ce].
+
+:exclamation: Order of returned data (depending on which you included): voltage, current,
+resistance, time, status, source.
+
+```python
+inst.write(":form:elem:calc calc,time")
+```
+* Specifies the elements included in the calculation result data.
+
+:exclamation: Order of returned data: calc, time, status.
+
+***N.B.*** I didn't mention calculation before, it is basically a way to manipulate the output data using math function. Please refer to the command reference or feel free to complete this document if need be.
+
+### Running the measurement
+
+```python
+inst.write(":init (@1,2)")
+```
+* Initiates the specified device action for the specified channel. Trigger status is changed from idle to initiated.
+* Here the command does not specify an action, therefore it initates all and runs the measurement.
+
+:exclamation: This command must be placed after every command mentioned above. It is obvious that you need to set measurement parameters before launching the said measurement.
+
+### Fetching the result data
+
+After running your measurement, you have to fetch the resulting data in order to store them in a variable.
+
+```python
+data_out = inst.query(":fetc:arr? (@1,2)")
+```
+* Here you expect to fetch an array of data. It returns the array data which contains all of the voltage measurement data, current measurement data, resistance measurement data, time data, status data, or source output setting data specified by the :FORM:ELEM:SENS command.
+* In (@1,2) you specify the channel list where to fetch the data (here channel 1 AND 2). You may use (@1) if you wish to fetch data from channel 1 only, of (@2) channel 2 only.
+
+<br><br/>
+If you wish to fetch only a specific measurement, use the following command:
+```python
+data_current = inst.query(":fetc:arr:curr? (@1,2)")
+```
+* This exemple is for current, you may replace curr by volt, res... depending on what you need.
+
+<br><br/>
+You may also want to fetch a scalar depending on your use.
+```python
+data_out = inst.query(":fetc:scal? (@1,2)")
+```
+* Here you expect to fetch a scalar data. It returns the latest voltage measurement data, current measurement data, resistance measurement data, time data, status data, or source output setting data specified by the :FORM:ELEM:SENS command.
+* In (@1,2) you specify the channel list where to fetch the data (here channel 1 AND 2). You may use (@1) if you wish to fetch data from channel 1 only, of (@2) channel 2 only.
+<br><br/>
+
+Similarly to array commands, you can fetch a specific scalar:
+```python
+data_out = inst.query(":fetc:scal:curr? (@1,2)")
+```
+* This exemple is for current, you may replace curr by volt, res... depending on what you need.
+
+<br><br/>
+:exclamation: If nothing is specified after ":fetc", it will fetch a scalar by default i.e.
+```python
+data_out = inst.query(":fetc:scal? (@1,2)")
+```
+is equivalent to
+```python
+data_out = inst.query(":fetc? (@1,2)")
+```
 
 
+### Run the measurement and fetching data at once
+
+To run the measurement and fetch data with one command, you may use the read function :
+```python
+inst.query(":read:arr? (@1,2)")
+```
+or
+```python
+inst.query(":read:arr:curr? (@1,2)")
+```
+or
+```python
+inst.query(":read:scal? (@1,2)")
+```
+or
+```python
+inst.query(":read:scal:curr? (@1,2)")
+```
+By now, you must have understood how it worked.
+
+:exclamation: Similarly to previous mention, if ":scal" or ":arr" is not mentioned, it fetches a scalar by default.
+
+### Advanced function
+
+You may use advanced function to control the instrument. For instance, you may generate a beep sound of 800Hz frequency during 1.5 seconds (```inst.write(":sys:beep 800, 1.5")```).
+
+You may check the command reference book for further information as it won't be developed here.
