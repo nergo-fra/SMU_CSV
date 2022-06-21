@@ -31,6 +31,7 @@ plt.style.use('dark_background')
 
 I_comp = 0.0007 # current compliance S1
 time_per_point = 1e-1  # Minimum value of 2e-5
+time_before meas = 2 #if SMU is not on, we give it time to initialize
 
 # FUNCTION
 
@@ -40,9 +41,76 @@ def _read_csv(name):
     return df
 
 def _settings_commands_SMU(inst, parameters, V_list, wait = True):
+    # Source settings before turn on - the second source is set as shown by carefulness, we wouldn't want to inject a current or voltage in the detector
     inst.write(":sour1:func:mode volt")
-    inst.write(":sour1:curr:lev:imm" + V_list.split(',')[0])
+    inst.write(":sour1:volt:lev:imm" + V_list.split(',')[0])
+    inst.write(":sour1:volt:prot " + parameters[0])
+    inst.write(":sour2:func:mode curr")
+    inst.write(":sour2:func:lev:imm 0")
+    inst.write(":sour1:volt:prot 2")
 
+    # Turning outputs on
+    inst.write(":outp1 on")
+    inst.write(":outp2 on")
+
+    # If wait is needed (if the SMU is not on yet)
+    if wait:
+        time.sleep(parameters[7])
+
+    # Sets the measurement list of voltages (channel 1)
+    inst.write(":sour1:volt:mode list")
+    inst.write(":sour1:list:volt " + ch1_list)
+
+    # Sense settings
+    inst.write(":sens1:func \"volt\"")
+    inst.write(":sens2:func \"volt\"")
+    inst.write(":sens2:volt:rang:auto on")
+
+    # Measurement wait time set to OFF
+    inst.write(":sens1:wait off")
+    inst.write(":sour1:wait off")
+    inst.write(":sens2:wait off")
+    # sour2 not touched because we don't really care
+
+    # Set trigger source to the same mode
+    inst.write(":trig1:sour tim")
+    inst.write("trig1:tim " + parameters[1])
+    inst.write("trig1:acq:coun " + parameters[2])  # points per sweep
+    inst.write(":trig1:acq:del def")
+    inst.write("trig1:tran:coun " + parameters[2])
+    inst.write(":trig1:tran:del def")
+    inst.write(":trig2:sour tim")
+    inst.write("trig2:tim " + parameters[1])
+    inst.write("trig2:acq:coun " + parameters[2])
+    inst.write(":trig2:acq:del def")
+    inst.write("trig2:tran:coun " + parameters[2])
+    inst.write(":trig2:tran:del def")
+
+    # Measurement interval is set to the same value
+    inst.write(":sens1:curr:aper " + parameters[3])
+    inst.write(":sens2:volt:aper " + parameters[3])
+
+    # Output formatting
+    inst.write(":form:elem:sens volt,curr,time")
+
+    # Running measurements
+    inst.write(":init (@1,2)")
+
+    # Fetching data - there is a more elegant way to do that
+    data_LED_0 = inst.query(":fetc:arr:time? (@1)")
+    data_LED_1 = inst.query(":fetc:arr:curr? (@1)")
+    data_LED_2 = inst.query(":fetc:arr:volt? (@1)")
+    data_detect_0 = inst.query(":fetc:arr:time? (@2)")
+    data_detect_1 = inst.query(":fetc:arr:volt? (@2)")
+
+    # Transforming data from list to array
+    data_led_np_0 = np.asarray([float(i) for i in data_LED_0.split(',')])
+    data_led_np_1 = np.asarray([float(i) for i in data_LED_1.split(',')])
+    data_led_np_2 = np.asarray([float(i) for i in data_LED_2.split(',')])
+    data_detect_np_0 = np.asarray([float(i) for i in data_detect_0.split(',')])
+    data_detect_np_1 = np.asarray([float(i) for i in data_detect_1.split(',')])
+
+    return data_detect_np_0, data_detect_np_1, data_led_np_0, data_led_np_1, data_led_np_2
 
 
 
