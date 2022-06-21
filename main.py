@@ -110,22 +110,21 @@ def _settings_commands_SMU(inst, parameters, V_list, wait = True):
     inst.write(":init (@1,2)")
 
     print("Measurements done! \n Fetching data \n")
-    # Fetching data - there is a more elegant way to do that
-    data_LED_0 = inst.query(":fetc:arr:time? (@1)")
-    data_LED_1 = inst.query(":fetc:arr:curr? (@1)")
-    data_LED_2 = inst.query(":fetc:arr:volt? (@1)")
-    data_detect_0 = inst.query(":fetc:arr:time? (@2)")
-    data_detect_1 = inst.query(":fetc:arr:volt? (@2)")
+    data_raw = np.empty((len(V_list.split(",")), 5), float)
+    # Fetching data - there is a more elegant way to do that using read
+    data_raw[0] = inst.query(":fetc:arr:time? (@1)")
+    data_raw[1] = inst.query(":fetc:arr:curr? (@1)")
+    data_raw[2] = inst.query(":fetc:arr:volt? (@1)")
+    data_raw[3] = inst.query(":fetc:arr:time? (@2)")
+    data_raw[4] = inst.query(":fetc:arr:volt? (@2)")
 
     print("Data export... \n")
     # Transforming data from list to array
-    data_led_np_0 = np.asarray([float(i) for i in data_LED_0.split(',')])
-    data_led_np_1 = np.asarray([float(i) for i in data_LED_1.split(',')])
-    data_led_np_2 = np.asarray([float(i) for i in data_LED_2.split(',')])
-    data_detect_np_0 = np.asarray([float(i) for i in data_detect_0.split(',')])
-    data_detect_np_1 = np.asarray([float(i) for i in data_detect_1.split(',')])
+    data = np.empty((len(V_list.split(",")), 5), float)
+    for i in range(5):
+        data[i] = np.asarray([float(i) for i in data_raw[i].split(',')])
     print("Done\n")
-    return data_detect_np_0, data_detect_np_1, data_led_np_0, data_led_np_1, data_led_np_2
+    return data
 
 def _generate_sweep_from_pd(df):
     sweep = ""
