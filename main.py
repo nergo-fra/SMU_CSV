@@ -5,6 +5,8 @@
 import pyvisa
 import matplotlib as mpl
 import time
+import glob
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation, rc, cm
@@ -29,8 +31,8 @@ plt.style.use('dark_background')
 
 # PARAMETERS TO MODIFY
 
-I_comp = 2 # current compliance S1
-time_per_point = 3e-3  # Minimum value of 2e-5 #use time between measures from csv
+I_comp = 0.7E-3 # current compliance S1
+time_per_point = 3E-3  # Minimum value of 2e-5 #use time between measures from csv
 time_before_meas = 2 #if SMU is not on, we give it time to initialize
 
 # FUNCTION
@@ -67,6 +69,8 @@ def _settings_commands_SMU(inst, parameters, V_list, wait = True):
     inst.write(":sour1:func:mode volt")
     inst.write(":sour1:volt:mode list")
     inst.write(":sour1:list:volt " + V_list)
+    inst.write(":sour2:func:mode amps")
+    inst.write(":sour2:curr:lev:imm 0")
 
     print("SMU settings in progress : 40%")
     # Sense settings
@@ -74,6 +78,7 @@ def _settings_commands_SMU(inst, parameters, V_list, wait = True):
     inst.write(":sens2:func \"volt\"")
     inst.write(":sens2:volt:rang:auto on")
     inst.write(":sens1:volt:rang:auto on")
+    inst.write(":sens2:curr:prot 2")
 
     print("SMU settings in progress : 50%")
     # Measurement wait time set to OFF
@@ -149,34 +154,49 @@ if __name__ == '__main__':
         print("Incorrect serial, please modify code")
     assert (inst.query("*IDN?") == "Keysight Technologies,B2902A,MY51143745,3.4.2011.5100\n"), \
         print("Houston, we have a problem")
+    print("connection successful")
     inst.timeout = 500 * 1e5  # to change, depends on longest measurement. Not in the readme but pretty obvious
-    df = _read_csv("spinal_normalized_1_4_trunc.csv")
-    V_list = _generate_sweep_from_pd(df)
+    df = _read_csv("spinal_normalized_1_1.csv")
+    print(len(df))
+    for i in range(2500, int(len(df)/2), 2500):
+        V_list = _generate_sweep_from_pd(df[i - 2500:i])
 
-    # parameters format (list of strings, units of seconds, amps, volts):
-    # [(0) S1 compliance current,(1) time per point,(2) points per sweep,(3) acquisition time,
-    #  (4) premeasurement voltage hold time, (5) measurement delay]
-    parameters = []
-    parameters.append("{:.0E}".format(I_comp))
-    parameters.append("{:.1E}".format((time_per_point)))
-    parameters.append("{:.1f}".format(len(V_list.split(','))))
-    parameters.append("{:.1E}".format(time_per_point / 2))
-    parameters.append(time_before_meas)
-    parameters.append("{:.1E}".format((time_per_point / 2)))
+        # parameters format (list of strings, units of seconds, amps, volts):
+        # [(0) S1 compliance current,(1) time per point,(2) points per sweep,(3) acquisition time,
+        #  (4) premeasurement voltage hold time, (5) measurement delay]
+        parameters = []
+        parameters.append("{:.0E}".format(I_comp))
+        parameters.append("{:.1E}".format((time_per_point)))
+        parameters.append("{:.1f}".format(len(V_list.split(','))))
+        parameters.append("{:.1E}".format(time_per_point / 2))
+        parameters.append(time_before_meas)
+        parameters.append("{:.1E}".format((time_per_point / 2)))
 
-    # Create empty array to store output data
-    transfer = np.empty((len(V_list.split(",")), 5), float)
-    transfer = _settings_commands_SMU(inst, parameters, V_list, False)
+        # Create empty array to store output data
+        transfer = np.empty((len(V_list.split(",")), 5), float)
+        transfer[0,:] += 7.496999999999999886e+00 * int(i / 2500)
+        transfer = _settings_commands_SMU(inst, parameters, V_list, False)
 
+        # # Plotting
+        # plt.plot(transfer[0], transfer[1], color='aquamarine', label = "Detector output")
+        # plt.plot(transfer[2], transfer[4], color='salmon', label = "LED input")
+        # plt.xlabel("$Time$ (s)")
+        # plt.ylabel("$Voltage$ (V)")
+        # plt.title("Spinal chord recording - wh Blood")
+        # plt.show()
+
+        # Saving CSV
+        filename = "Spinalchordrecording-withblood" + str(int(i / 2500)) + ".csv" #change filename
+        folder = "Data\\"
+        np.savetxt(folder + filename, np.transpose(transfer), delimiter=",")
     # Plotting
-    plt.plot(transfer[0], transfer[1], color='aquamarine', label = "Detector output")
-    plt.plot(transfer[2], transfer[4], color='salmon', label = "LED input")
+    files = os.path.join(folder, "Spinalchordrecording-withblood*.csv")
+    files = glob.glob(files)
+    df_ex = pd.concat(map(pd.read_csv, files), names=[str(i) for i in range(5)], index_col=0, skiprows=1, low_memory=False)
+    df_ex.astype('float').dtypes
+    df_ex.plot(x = '0',y = '1', color='aquamarine', label = "Detector output")
+    plt.plot(x= '2', y = '4', color='salmon', label = "LED input")
     plt.xlabel("$Time$ (s)")
     plt.ylabel("$Voltage$ (V)")
-    plt.title("Spinal chord recording - with Blood")
+    plt.title("Spinal chord recording - wh Blood")
     plt.show()
-
-    # Saving CSV
-    filename = "Spinal chord recording - with blood " + str(1) #change filename
-    folder = "Data\\"
-    np.save(folder + filename, transfer)
